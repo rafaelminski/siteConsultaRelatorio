@@ -27,7 +27,7 @@ st.markdown('<div class="header-pluma"><h2>🚀 Painel de Contabilidade - High P
 try:
     con = duckdb.connect()
     # Verifica se o arquivo existe na pasta
-    con.execute("SELECT count(*) FROM 'data_part_*.parquet'").fetchone()
+    con.execute("SELECT count(*) FROM 'dados_part_/*.parquet'").fetchone()
 except Exception as e:
     st.error(f"Erro: Arquivo 'data_part_*.parquet' não encontrado. ({e})")
     st.stop()
@@ -60,7 +60,7 @@ with col2:
     limite_linhas = st.selectbox("Linhas p/ exibir", [100, 1000, 5000, "Todas"])
 
 # --- CONSTRUÇÃO DA QUERY ---
-query_base = "SELECT * FROM 'data_part_*.parquet' WHERE 1=1"
+query_base = "SELECT * FROM 'dados_part_/*.parquet' WHERE 1=1"
 params = []
 
 if valor_selecionado != "(Todos)":
