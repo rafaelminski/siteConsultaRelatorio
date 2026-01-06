@@ -25,23 +25,22 @@ st.markdown('<div class="header-pluma"><h2>🚀 Painel de Contabilidade - High P
 # --- CONEXÃO COM DADOS (DUCKDB) ---
 try:
     con = duckdb.connect()
-    # Verifica se existem arquivos DENTRO da pasta 'dados_part_'
-    # O asterisco *.parquet lê tudo que estiver lá dentro
+    # CAMINHO CORRIGIDO: dados_part_/*.parquet
     con.execute("SELECT count(*) FROM 'dados_part_/*.parquet'").fetchone()
 except Exception as e:
-    st.error(f"Erro crítico: Não foi possível ler os arquivos na pasta 'dados_part_'. Detalhe: {e}")
+    st.error(f"Erro ao conectar com os dados: {e}")
     st.stop()
 
-# --- FILTROS LATERAIS (SQL Otimizado) ---
+# --- FILTROS LATERAIS ---
 with st.sidebar:
     st.header("🔧 Filtros Globais")
     
-    # CORREÇÃO AQUI: Antes estava 'data_part_', agora está 'dados_part_/*.parquet'
+    # CAMINHO CORRIGIDO AQUI TAMBÉM
     colunas = [x[0] for x in con.execute("DESCRIBE SELECT * FROM 'dados_part_/*.parquet'").fetchall()]
     
     coluna_filtro = st.selectbox("Escolha a Coluna Principal", colunas)
     
-    # CORREÇÃO AQUI TAMBÉM
+    # CAMINHO CORRIGIDO AQUI TAMBÉM
     valores_unicos = [x[0] for x in con.execute(f"""
         SELECT DISTINCT "{coluna_filtro}" 
         FROM 'dados_part_/*.parquet' 
@@ -60,7 +59,6 @@ with col2:
     limite_linhas = st.selectbox("Linhas p/ exibir", [100, 1000, 5000, "Todas"])
 
 # --- CONSTRUÇÃO DA QUERY ---
-# CORREÇÃO AQUI TAMBÉM: Uniformizado para dados_part_/*.parquet
 query_base = "SELECT * FROM 'dados_part_/*.parquet' WHERE 1=1"
 params = []
 
