@@ -23,28 +23,28 @@ st.markdown("""
 st.markdown('<div class="header-pluma"><h2>🚀 Painel de Contabilidade - High Performance</h2></div>', unsafe_allow_html=True)
 
 # --- CONEXÃO COM DADOS (DUCKDB) ---
-# Conecta ao arquivo parquet local automaticamente
 try:
     con = duckdb.connect()
-    # Verifica se o arquivo existe na pasta
+    # Verifica se existem arquivos DENTRO da pasta 'dados_part_'
+    # O asterisco *.parquet lê tudo que estiver lá dentro
     con.execute("SELECT count(*) FROM 'dados_part_/*.parquet'").fetchone()
 except Exception as e:
-    st.error(f"Erro: Arquivo 'data_part_*.parquet' não encontrado. ({e})")
+    st.error(f"Erro crítico: Não foi possível ler os arquivos na pasta 'dados_part_'. Detalhe: {e}")
     st.stop()
 
 # --- FILTROS LATERAIS (SQL Otimizado) ---
 with st.sidebar:
     st.header("🔧 Filtros Globais")
     
-    # Pega as colunas disponíveis
-    colunas = [x[0] for x in con.execute("DESCRIBE SELECT * FROM 'data_part_*.parquet'").fetchall()]
+    # CORREÇÃO AQUI: Antes estava 'data_part_', agora está 'dados_part_/*.parquet'
+    colunas = [x[0] for x in con.execute("DESCRIBE SELECT * FROM 'dados_part_/*.parquet'").fetchall()]
     
     coluna_filtro = st.selectbox("Escolha a Coluna Principal", colunas)
     
-    # Pega valores únicos (rápido)
+    # CORREÇÃO AQUI TAMBÉM
     valores_unicos = [x[0] for x in con.execute(f"""
         SELECT DISTINCT "{coluna_filtro}" 
-        FROM 'data_part_*.parquet' 
+        FROM 'dados_part_/*.parquet' 
         WHERE "{coluna_filtro}" IS NOT NULL 
         LIMIT 500
     """).fetchall()]
@@ -60,6 +60,7 @@ with col2:
     limite_linhas = st.selectbox("Linhas p/ exibir", [100, 1000, 5000, "Todas"])
 
 # --- CONSTRUÇÃO DA QUERY ---
+# CORREÇÃO AQUI TAMBÉM: Uniformizado para dados_part_/*.parquet
 query_base = "SELECT * FROM 'dados_part_/*.parquet' WHERE 1=1"
 params = []
 
@@ -69,7 +70,6 @@ if valor_selecionado != "(Todos)":
 
 if busca_livre:
     filtros_texto = []
-    # Busca nas 5 primeiras colunas para performance
     for col in colunas[:5]: 
         filtros_texto.append(f"CAST(\"{col}\" AS VARCHAR) ILIKE ?")
         params.append(f"%{busca_livre}%")
